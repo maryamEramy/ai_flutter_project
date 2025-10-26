@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
@@ -12,6 +13,14 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   askDeepSeek() async {
+    var inputText = textEditingController.text;
+    
+    messages.insert(0 , ChatMessage(user: user, createdAt: DateTime.now() , text: inputText));
+    setState(() {
+      messages;
+    });
+    
+    textEditingController.clear();
     final response = await post(
       Uri.parse("https://api.deepseek.com/chat/completions"),
       headers: {
@@ -23,36 +32,58 @@ class _ChatScreenState extends State<ChatScreen> {
         "model": "deepseek-chat",
         "messages": [
           {"content": "You are a helpful assistant", "role": "system"},
-          {"content": textEditingController.text, "role": "user"},
+          {"content": inputText, "role": "user"},
         ],
       }),
     );
     if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
+      final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
       results = jsonData['choices'][0]['message']['content'];
+      messages.insert(0 , ChatMessage(user: userDS, createdAt: DateTime.now() , text: results));
       setState(() {
-        results;
+        messages;
       });
     }
+    messages.insert(0 , ChatMessage(user: userDS, createdAt: DateTime.now() , text: response.body));
+    setState(() {
+      messages;
+    });
     print(response.body);
   }
 
   TextEditingController textEditingController = TextEditingController();
   var results = 'results will shown here...';
+
+  ChatUser user = ChatUser(id: '1' , firstName: 'mar');
+  ChatUser userDS = ChatUser(id: '2' , firstName: 'DeepSeek');
+  List<ChatMessage> messages = <ChatMessage>[];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
       body: Column(
         children: [
-          Expanded(child: Center(child: Text(results),)),
-          Expanded(child: TextField(controller: textEditingController)),
-          IconButton(
-            onPressed: () {
-              askDeepSeek();
-            },
-            icon: Icon(Icons.send),
+          Expanded(child: DashChat(currentUser: user, onSend: (e){}, messages: messages , readOnly: true,)),
+          Card(
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: textEditingController,
+                    decoration: InputDecoration(hintText: "write here..."),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    askDeepSeek();
+                  },
+                  icon: Icon(Icons.send),
+                ),
+              ],
+            ),
           ),
+
         ],
       ),
     );
