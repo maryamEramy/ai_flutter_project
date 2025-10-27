@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:ai_flutter_project/ChatService.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -16,6 +17,7 @@ class _ChatScreenState extends State<ChatScreen> {
   List<Map<String , Object>> chatHistory = [
     {"content": "You are a helpful assistant", "role": "system"},
   ];
+  ChatService chatService = ChatService();
   askDeepSeek() async {
     var inputText = textEditingController.text;
     chatHistory.add({"role": "user", "content": inputText});
@@ -23,34 +25,13 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       messages;
     });
-    
     textEditingController.clear();
-    final response = await post(
-      Uri.parse("https://api.deepseek.com/chat/completions"),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer sk-44a7da1ca5c649ba954d55e9ddce0ad6',
-      },
-      body: jsonEncode({
-        "model": "deepseek-chat",
-        "messages": chatHistory,
-      }),
-    );
-    if (response.statusCode == 200) {
-      final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
-      results = jsonData['choices'][0]['message']['content'];
-      chatHistory.add({"role": "assistant", "content": results});
-      messages.insert(0 , ChatMessage(user: userDS, createdAt: DateTime.now() , text: results));
-      setState(() {
-        messages;
-      });
-    }
-    messages.insert(0 , ChatMessage(user: userDS, createdAt: DateTime.now() , text: response.body));
+    results = await chatService.askDeepSeek(chatHistory);
+    chatHistory.add({"role": "assistant", "content": results});
+    messages.insert(0 , ChatMessage(user: userDS, createdAt: DateTime.now() , text: results));
     setState(() {
       messages;
     });
-    print(response.body);
   }
 
   TextEditingController textEditingController = TextEditingController();
