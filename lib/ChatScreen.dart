@@ -31,7 +31,9 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       messages;
     });
-    flutterTts.speak(results);
+    if(isTtsEnabled){
+      flutterTts.speak(results);
+    }
   }
 
   TextEditingController textEditingController = TextEditingController();
@@ -42,10 +44,25 @@ class _ChatScreenState extends State<ChatScreen> {
   List<ChatMessage> messages = <ChatMessage>[];
 
   FlutterTts flutterTts = FlutterTts();
+  bool isTtsEnabled = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions: [
+          IconButton(onPressed: (){
+            if(isTtsEnabled){
+              isTtsEnabled = false;
+              flutterTts.stop();
+            }else{
+              isTtsEnabled = true;
+            }
+            setState(() {
+              isTtsEnabled;
+            });
+          }, icon: Icon(isTtsEnabled? Icons.surround_sound : Icons.surround_sound_outlined))
+        ],
+      ),
       body: Column(
         children: [
           Expanded(child: DashChat(currentUser: user, onSend: (e){}, messages: messages , readOnly: true,)),
