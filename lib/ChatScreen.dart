@@ -45,6 +45,25 @@ class _ChatScreenState extends State<ChatScreen> {
 
   FlutterTts flutterTts = FlutterTts();
   bool isTtsEnabled = true;
+
+  //customizing
+  exploreTTs() async{
+    List<dynamic> languages = await flutterTts.getLanguages;
+    languages.forEach((language){
+      print('language:' + language);
+    });
+    if(await flutterTts.isLanguageAvailable("ur-PK")){
+      flutterTts.setLanguage("ur-PK");
+    }
+    List<dynamic> voices = await flutterTts.getVoices;
+    voices.forEach((voice){
+      print('voice:' + voice.toString());
+    });
+      flutterTts.setVoice({
+        "name": "ur-pk-x-cfn-network" , "locale": "ur-PK"
+      });
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
