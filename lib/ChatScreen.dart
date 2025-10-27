@@ -1,9 +1,8 @@
-import 'dart:convert';
 
 import 'package:ai_flutter_project/ChatService.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -32,6 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       messages;
     });
+    flutterTts.speak(results);
   }
 
   TextEditingController textEditingController = TextEditingController();
@@ -41,6 +41,7 @@ class _ChatScreenState extends State<ChatScreen> {
   ChatUser userDS = ChatUser(id: '2' , firstName: 'DeepSeek');
   List<ChatMessage> messages = <ChatMessage>[];
 
+  FlutterTts flutterTts = FlutterTts();
   @override
   Widget build(BuildContext context) {
     return Scaffold(

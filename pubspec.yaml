@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.5.0
   dash_chat_2: ^0.0.21
+  flutter_tts: ^4.2.3
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:http/http.dart';
 
 class ChatService{
