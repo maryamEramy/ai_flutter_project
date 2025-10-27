@@ -12,9 +12,13 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+
+  List<Map<String , Object>> chatHistory = [
+    {"content": "You are a helpful assistant", "role": "system"},
+  ];
   askDeepSeek() async {
     var inputText = textEditingController.text;
-    
+    chatHistory.add({"role": "user", "content": inputText});
     messages.insert(0 , ChatMessage(user: user, createdAt: DateTime.now() , text: inputText));
     setState(() {
       messages;
@@ -30,15 +34,13 @@ class _ChatScreenState extends State<ChatScreen> {
       },
       body: jsonEncode({
         "model": "deepseek-chat",
-        "messages": [
-          {"content": "You are a helpful assistant", "role": "system"},
-          {"content": inputText, "role": "user"},
-        ],
+        "messages": chatHistory,
       }),
     );
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
       results = jsonData['choices'][0]['message']['content'];
+      chatHistory.add({"role": "assistant", "content": results});
       messages.insert(0 , ChatMessage(user: userDS, createdAt: DateTime.now() , text: results));
       setState(() {
         messages;
