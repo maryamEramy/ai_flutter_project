@@ -93,10 +93,14 @@ class _ChatScreenState extends State<ChatScreen> {
   /// This is the callback that the SpeechToText plugin calls when
   /// the platform returns recognized words.
   void _onSpeechResult(SpeechRecognitionResult result) {
-    setState(() {
-      _lastWords = result.recognizedWords;
-      print(_lastWords);
-    });
+    if(result.finalResult) {
+      setState(() {
+        _lastWords = result.recognizedWords;
+        textEditingController.text = _lastWords;
+        askDeepSeek();
+        print(_lastWords);
+      });
+    }
   }
 
   @override
