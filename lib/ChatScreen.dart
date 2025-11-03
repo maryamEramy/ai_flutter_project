@@ -2,6 +2,7 @@ import 'package:ai_flutter_project/ChatService.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -14,7 +15,11 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   List<Map<String, Object>> chatHistory = [
-    {"content": "You are a helpful financial assistant. Always include a gentle but firm reminder that your advice is not a medical diagnosis and that the user should **consult a qualified doctor in person for proper examination and treatment**", "role": "system"},
+    {
+      "content":
+          "You are a helpful financial assistant. Always include a gentle but firm reminder that your advice is not a medical diagnosis and that the user should **consult a qualified doctor in person for proper examination and treatment**",
+      "role": "system",
+    },
   ];
   ChatService chatService = ChatService();
   askDeepSeek() async {
@@ -22,10 +27,11 @@ class _ChatScreenState extends State<ChatScreen> {
     chatHistory.add({"role": "user", "content": inputText});
     messages.insert(
       0,
-      ChatMessage(user: user, createdAt: DateTime.now(), text: inputText),
+      ChatMessage(user: user, createdAt: DateTime.now(), text: inputText ),
     );
     setState(() {
       messages;
+      isLoading = true;
     });
     textEditingController.clear();
     results = await chatService.askDeepSeek(chatHistory);
@@ -36,6 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
     setState(() {
       messages;
+      isLoading = false;
     });
     if (isTtsEnabled) {
       flutterTts.speak(results);
@@ -112,10 +119,18 @@ class _ChatScreenState extends State<ChatScreen> {
     _initSpeech();
   }
 
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
+    Color? mainColor = Colors.blue[600];
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: mainColor,
+        title: Text(
+          "DeepSeek",
+          style: TextStyle(fontSize: 22, color: Colors.white),
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -133,130 +148,168 @@ class _ChatScreenState extends State<ChatScreen> {
               isTtsEnabled
                   ? Icons.surround_sound
                   : Icons.surround_sound_outlined,
+              color: Colors.white,
             ),
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          messages.isNotEmpty
-              ? Expanded(
-                  child: DashChat(
-                    currentUser: user,
-                    onSend: (e) {},
-                    messages: messages,
-                    readOnly: true,
-                  ),
-                )
-              : Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.medication_liquid_sharp, color: Colors.blue),
-                      Text('Hello/n What is the problem?'),
-                      Row(
+          Column(
+            children: [
+              messages.isNotEmpty
+                  ? Expanded(
+                      child: DashChat(
+                        currentUser: user,
+                        onSend: (e) {},
+                        messages: messages,
+                        readOnly: true,
+                        messageOptions: MessageOptions(
+                          currentUserContainerColor: mainColor,
+                          textColor: Colors.black87,
+                          currentUserTextColor: Colors.white,
+                          borderRadius: 18.0,
+                          showTime: false,
+                          messagePadding: const EdgeInsets.all(12),
+                        ),
+                      ),
+
+              )
+                  : Expanded(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          InkWell(
-                            onTap: () {
-                              textEditingController.text = "I have headache";
-                              askDeepSeek();
-                            },
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(40),
-                              ),
-                              color: Colors.white,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 5,
-                                ),
-                                child: Text(
-                                  'Headache',
-                                  style: TextStyle(color: Colors.amber),
-                                ),
-                              ),
-                            ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.2,
+                            width: MediaQuery.of(context).size.width * 0.2,
+                            child: Lottie.asset("assets/Robotanim.json"),
                           ),
-                          InkWell(
-                            onTap: () {
-                              textEditingController.text = "I have stomach pain";
-                              askDeepSeek();
-                            },
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(40),
-                              ),
-                              color: Colors.white,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 5,
+                          Text('Hello!\nWhat is the problem?', textAlign: TextAlign.center,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  textEditingController.text =
+                                      "I have headache";
+                                  askDeepSeek();
+                                },
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(40),
+                                  ),
+                                  color: Colors.white,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 10,
+                                      horizontal: 12,
+                                    ),
+                                    child: Text(
+                                      'Headache',
+                                      style: TextStyle(color: Colors.amber),
+                                    ),
+                                  ),
                                 ),
-                                child: Text(
-                                  'Stomach pain',
-                                  style: TextStyle(color: Colors.green),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  textEditingController.text =
+                                      "I have stomach pain";
+                                  askDeepSeek();
+                                },
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(40),
+                                  ),
+                                  color: Colors.white,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 10,
+                                      horizontal: 12,
+                                    ),
+                                    child: Text(
+                                      'Stomach pain',
+                                      style: TextStyle(color: Colors.green),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  textEditingController.text =
+                                      "I need a checkup";
+                                  askDeepSeek();
+                                },
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(40),
+                                  ),
+                                  color: Colors.white,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 10,
+                                      horizontal: 12,
+                                    ),
+                                    child: Text(
+                                      'Need a checkup',
+                                      style: TextStyle(color: Colors.purple),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              textEditingController.text = "I need a checkup";
-                              askDeepSeek();
-                            },
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(40),
-                              ),
-                              color: Colors.white,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 5,
-                                ),
-                                child: Text(
-                                  'Need a checkup',
-                                  style: TextStyle(color: Colors.purple),
-                                ),
-                              ),
+                    ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Card(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          cursorColor: mainColor,
+                          controller: textEditingController,
+                          decoration: InputDecoration(
+                            hintText: "Write here...",
+                            hintStyle: TextStyle(color: Colors.grey[500]),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
                             ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           ),
-                        ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          _startListening();
+                        },
+                        icon: Icon(Icons.mic , color: Colors.green,),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          askDeepSeek();
+                        },
+                        icon: Icon(Icons.send , color: mainColor,),
                       ),
                     ],
                   ),
                 ),
-          Card(
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: textEditingController,
-                    decoration: InputDecoration(hintText: "write here..."),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    _startListening();
-                  },
-                  icon: Icon(Icons.mic),
-                ),
-                IconButton(
-                  onPressed: () {
-                    askDeepSeek();
-                  },
-                  icon: Icon(Icons.send),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
+          isLoading
+              ? Center(child: Lottie.asset("assets/chatanim.json"))
+              : Container(),
         ],
       ),
     );
