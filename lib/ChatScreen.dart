@@ -1,4 +1,3 @@
-
 import 'package:ai_flutter_project/ChatService.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
@@ -14,26 +13,31 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-
-  List<Map<String , Object>> chatHistory = [
-    {"content": "You are a helpful assistant", "role": "system"},
+  List<Map<String, Object>> chatHistory = [
+    {"content": "You are a helpful financial assistant. Always include a gentle but firm reminder that your advice is not a medical diagnosis and that the user should **consult a qualified doctor in person for proper examination and treatment**", "role": "system"},
   ];
   ChatService chatService = ChatService();
   askDeepSeek() async {
     var inputText = textEditingController.text;
     chatHistory.add({"role": "user", "content": inputText});
-    messages.insert(0 , ChatMessage(user: user, createdAt: DateTime.now() , text: inputText));
+    messages.insert(
+      0,
+      ChatMessage(user: user, createdAt: DateTime.now(), text: inputText),
+    );
     setState(() {
       messages;
     });
     textEditingController.clear();
     results = await chatService.askDeepSeek(chatHistory);
     chatHistory.add({"role": "assistant", "content": results});
-    messages.insert(0 , ChatMessage(user: userDS, createdAt: DateTime.now() , text: results));
+    messages.insert(
+      0,
+      ChatMessage(user: userDS, createdAt: DateTime.now(), text: results),
+    );
     setState(() {
       messages;
     });
-    if(isTtsEnabled){
+    if (isTtsEnabled) {
       flutterTts.speak(results);
     }
   }
@@ -41,34 +45,33 @@ class _ChatScreenState extends State<ChatScreen> {
   TextEditingController textEditingController = TextEditingController();
   var results = 'results will shown here...';
 
-  ChatUser user = ChatUser(id: '1' , firstName: 'mar');
-  ChatUser userDS = ChatUser(id: '2' , firstName: 'DeepSeek');
+  ChatUser user = ChatUser(id: '1', firstName: 'mar');
+  ChatUser userDS = ChatUser(id: '2', firstName: 'DeepSeek');
   List<ChatMessage> messages = <ChatMessage>[];
 
   FlutterTts flutterTts = FlutterTts();
   bool isTtsEnabled = true;
 
   //customizing
-  exploreTTs() async{
+  exploreTTs() async {
     List<dynamic> languages = await flutterTts.getLanguages;
-    languages.forEach((language){
+    languages.forEach((language) {
       print('language:' + language);
     });
-    if(await flutterTts.isLanguageAvailable("ur-PK")){
+    if (await flutterTts.isLanguageAvailable("ur-PK")) {
       flutterTts.setLanguage("ur-PK");
     }
     List<dynamic> voices = await flutterTts.getVoices;
-    voices.forEach((voice){
+    voices.forEach((voice) {
       print('voice:' + voice.toString());
     });
-      flutterTts.setVoice({
-        "name": "ur-pk-x-cfn-network" , "locale": "ur-PK"
-      });
+    flutterTts.setVoice({"name": "ur-pk-x-cfn-network", "locale": "ur-PK"});
   }
 
   SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   String _lastWords = '';
+
   /// This has to happen only once per app
   void _initSpeech() async {
     _speechEnabled = await _speechToText.initialize();
@@ -93,7 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
   /// This is the callback that the SpeechToText plugin calls when
   /// the platform returns recognized words.
   void _onSpeechResult(SpeechRecognitionResult result) {
-    if(result.finalResult) {
+    if (result.finalResult) {
       setState(() {
         _lastWords = result.recognizedWords;
         textEditingController.text = _lastWords;
@@ -109,28 +112,127 @@ class _ChatScreenState extends State<ChatScreen> {
     _initSpeech();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          IconButton(onPressed: (){
-            if(isTtsEnabled){
-              isTtsEnabled = false;
-              flutterTts.stop();
-            }else{
-              isTtsEnabled = true;
-            }
-            setState(() {
-              isTtsEnabled;
-            });
-          }, icon: Icon(isTtsEnabled? Icons.surround_sound : Icons.surround_sound_outlined))
+          IconButton(
+            onPressed: () {
+              if (isTtsEnabled) {
+                isTtsEnabled = false;
+                flutterTts.stop();
+              } else {
+                isTtsEnabled = true;
+              }
+              setState(() {
+                isTtsEnabled;
+              });
+            },
+            icon: Icon(
+              isTtsEnabled
+                  ? Icons.surround_sound
+                  : Icons.surround_sound_outlined,
+            ),
+          ),
         ],
       ),
       body: Column(
         children: [
-          Expanded(child: DashChat(currentUser: user, onSend: (e){}, messages: messages , readOnly: true,)),
+          messages.isNotEmpty
+              ? Expanded(
+                  child: DashChat(
+                    currentUser: user,
+                    onSend: (e) {},
+                    messages: messages,
+                    readOnly: true,
+                  ),
+                )
+              : Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.medication_liquid_sharp, color: Colors.blue),
+                      Text('Hello/n What is the problem?'),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              textEditingController.text = "I have headache";
+                              askDeepSeek();
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(40),
+                              ),
+                              color: Colors.white,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 5,
+                                ),
+                                child: Text(
+                                  'Headache',
+                                  style: TextStyle(color: Colors.amber),
+                                ),
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              textEditingController.text = "I have stomach pain";
+                              askDeepSeek();
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(40),
+                              ),
+                              color: Colors.white,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 5,
+                                ),
+                                child: Text(
+                                  'Stomach pain',
+                                  style: TextStyle(color: Colors.green),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              textEditingController.text = "I need a checkup";
+                              askDeepSeek();
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(40),
+                              ),
+                              color: Colors.white,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 5,
+                                ),
+                                child: Text(
+                                  'Need a checkup',
+                                  style: TextStyle(color: Colors.purple),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
           Card(
             child: Row(
               children: [
@@ -155,7 +257,6 @@ class _ChatScreenState extends State<ChatScreen> {
               ],
             ),
           ),
-
         ],
       ),
     );
